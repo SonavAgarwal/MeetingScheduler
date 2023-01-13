@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "sonaviscool"
+  },
+  "targets": {
+    "sonaviscool": {
+      "hosting": {
+        "when2eat": [
+          "when2eat"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
