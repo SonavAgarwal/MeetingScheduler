@@ -79,15 +79,25 @@ function DayCard(props) {
 									props?.selections?.includes(index) && "mBSelecteds"
 								}`}
 							>
-								<span>{name}</span>
-								<div style={{ flex: 1 }}></div>
-								{getAvailable(index).map(function (name, index) {
-									return (
-										<span key={index + "emoji"} className="availableEmoji">
-											{emojiFrom(name)}
-										</span>
-									);
-								})}
+								<span className="mBText">{name}</span>
+								{/* <div style={{ flex: 1 }}></div> */}
+								<div className="availableEmojiList">
+									<div></div>
+									{
+										getAvailable(index).map(function (name, index) {
+											return (
+												<span
+													key={index + "emoji"}
+													className="availableEmoji"
+													title={name}
+												>
+													{emojiFrom(name)}
+												</span>
+											);
+										})
+										// .slice(0, 3)
+									}
+								</div>
 								<span
 									className={`checkedEmoji ${
 										props?.selections?.includes(index) && "checkedEmojiShown"

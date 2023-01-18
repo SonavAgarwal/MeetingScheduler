@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import AnimateHeight from "react-animate-height";
 import { cloneDeep, debounce } from "lodash";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import { useBeforeunload } from "react-beforeunload";
 
 import { isEqual } from "lodash";
 import { emojiFrom } from "./utils";
@@ -41,6 +42,8 @@ function MeetingPage() {
 	);
 
 	const [localData, setLocalData] = useState(null);
+	const [debouncingSave, setDebouncingSave] = useState(false);
+	const [dataSaved, setDataSaved] = useState(true);
 
 	useEffect(
 		function () {
@@ -50,6 +53,9 @@ function MeetingPage() {
 	);
 
 	function saveChanges(newLocalData) {
+		console.log("saving changes");
+		setDebouncingSave(false);
+		setDataSaved(true);
 		if (!name) return;
 		if (isEqual(newLocalData, snapshot)) return;
 		updateAvailability(name, newLocalData[name], meetId);
@@ -64,10 +70,20 @@ function MeetingPage() {
 
 	useEffect(
 		function () {
-			saveChangesDebounced(localData);
+			if (!dataSaved) {
+				saveChangesDebounced(localData);
+				setDebouncingSave(true);
+			}
 		},
-		[localData] // TODO add snapshot
+		[localData, dataSaved] // TODO add snapshot
 	);
+
+	useBeforeunload(function (event) {
+		if (debouncingSave) {
+			event.preventDefault();
+			saveChanges(localData);
+		}
+	});
 
 	function getMeetingTitle() {
 		let people = snapshot?.people;
@@ -137,6 +153,7 @@ function MeetingPage() {
 			);
 		} else localData[name]?.[day].push(meal);
 		setLocalData({ ...localData });
+		setDataSaved(false);
 	}
 
 	const navigate = useNavigate();
@@ -180,9 +197,13 @@ function MeetingPage() {
 			</div>
 			<AnimateHeight delay={0} duration={300} height={name ? "auto" : 0}>
 				{name && (
-					<h2>
-						You are {name} {emojiFrom(name)}
-					</h2>
+					<>
+						<h2>
+							You are {name} {emojiFrom(name)}. Your changes are{" "}
+							{debouncingSave ? "saving" : "saved"}.
+						</h2>
+						<h2></h2>
+					</>
 				)}
 			</AnimateHeight>
 			<AnimateHeight duration={300} height={name ? 0 : "auto"}>
@@ -210,6 +231,14 @@ function MeetingPage() {
 					);
 				})}
 			</div>
+
+			<h2 className="footerText">
+				{snapshot?.people
+					?.map(function (name) {
+						return name + " " + emojiFrom(name);
+					})
+					.join(", ")}
+			</h2>
 		</div>
 	);
 }
